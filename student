@@ -1,0 +1,66 @@
+class Student:
+    def __init__(self, student_id, name, birth_year, major):
+        self.__student_id = student_id
+        self.__name = name
+        self.__birth_year = birth_year
+        self.__major = major
+        self.__scores = {}
+
+    # ======================
+    # PROPERTIES
+    # ======================
+    @property
+    def student_id(self):
+        return self.__student_id
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        self.__name = value
+
+    @property
+    def birth_year(self):
+        return self.__birth_year
+
+    @birth_year.setter
+    def birth_year(self, value):
+        self.__birth_year = value
+
+    @property
+    def major(self):
+        return self.__major
+
+    @major.setter
+    def major(self, value):
+        self.__major = value
+
+    @property
+    def scores(self):
+        return self.__scores
+
+    # ======================
+    # METHODS
+    # ======================
+    def add_score(self, subject, score):
+        self.__scores[subject] = score
+
+    def calculate_gpa(self):
+        if len(self.__scores) == 0:
+            return 0.0
+
+        return round(
+            sum(self.__scores.values()) / len(self.__scores),
+            2
+        )
+
+    def __str__(self):
+        return (
+            f"ID: {self.student_id} | "
+            f"Name: {self.name} | "
+            f"Birth Year: {self.birth_year} | "
+            f"Major: {self.major} | "
+            f"GPA: {self.calculate_gpa()}"
+        )
