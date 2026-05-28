@@ -1,0 +1,390 @@
+# ==============================
+# STUDENT MANAGEMENT SYSTEM
+# PFP191 - Programming Fundamentals with Python
+# ==============================
+
+import os
+
+
+# ==============================
+# STUDENT CLASS
+# ==============================
+class Student:
+    def __init__(self, student_id, name, birth_year, major):
+        self.__student_id = student_id
+        self.__name = name
+        self.__birth_year = birth_year
+        self.__major = major
+        self.__scores = {}
+
+    # ---------- Properties ----------
+    @property
+    def student_id(self):
+        return self.__student_id
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        self.__name = value
+
+    @property
+    def birth_year(self):
+        return self.__birth_year
+
+    @birth_year.setter
+    def birth_year(self, value):
+        self.__birth_year = value
+
+    @property
+    def major(self):
+        return self.__major
+
+    @major.setter
+    def major(self, value):
+        self.__major = value
+
+    @property
+    def scores(self):
+        return self.__scores
+
+    # ---------- Methods ----------
+    def add_score(self, subject, score):
+        self.__scores[subject] = score
+
+    def calculate_gpa(self):
+        if len(self.__scores) == 0:
+            return 0.0
+        return round(sum(self.__scores.values()) / len(self.__scores), 2)
+
+    def __str__(self):
+        return (
+            f"ID: {self.student_id} | "
+            f"Name: {self.name} | "
+            f"Birth Year: {self.birth_year} | "
+            f"Major: {self.major} | "
+            f"GPA: {self.calculate_gpa()}"
+        )
+
+
+# ==============================
+# SYSTEM MANAGER CLASS
+# ==============================
+class SystemManager:
+    def __init__(self):
+        self.students = []
+
+    # ---------- Add Student ----------
+    def add_student(self):
+        try:
+            student_id = input("Enter student ID: ")
+
+            # Check duplicate ID
+            for student in self.students:
+                if student.student_id == student_id:
+                    print("Student ID already exists!")
+                    return
+
+            name = input("Enter name: ")
+            birth_year = int(input("Enter birth year: "))
+            major = input("Enter major: ")
+
+            student = Student(student_id, name, birth_year, major)
+            self.students.append(student)
+
+            print("Student added successfully!")
+
+        except ValueError:
+            print("Invalid input!")
+
+    # ---------- Show Students ----------
+    def show_students(self):
+        if not self.students:
+            print("No students found!")
+            return
+
+        print("\n===== STUDENT LIST =====")
+        for student in self.students:
+            print(student)
+
+            if student.scores:
+                print("Scores:")
+                for subject, score in student.scores.items():
+                    print(f"  {subject}: {score}")
+
+            print("-" * 40)
+
+    # ---------- Find Student ----------
+    def find_student_by_id(self, student_id):
+        for student in self.students:
+            if student.student_id == student_id:
+                return student
+        return None
+
+    # ---------- Edit Student ----------
+    def edit_student(self):
+        student_id = input("Enter student ID to edit: ")
+
+        student = self.find_student_by_id(student_id)
+
+        if student:
+            print("Leave blank if you don't want to change.")
+
+            new_name = input("Enter new name: ")
+            new_birth_year = input("Enter new birth year: ")
+            new_major = input("Enter new major: ")
+
+            if new_name:
+                student.name = new_name
+
+            if new_birth_year:
+                student.birth_year = int(new_birth_year)
+
+            if new_major:
+                student.major = new_major
+
+            print("Student updated successfully!")
+
+        else:
+            print("Student not found!")
+
+    # ---------- Delete Student ----------
+    def delete_student(self):
+        student_id = input("Enter student ID to delete: ")
+
+        student = self.find_student_by_id(student_id)
+
+        if student:
+            self.students.remove(student)
+            print("Student deleted successfully!")
+        else:
+            print("Student not found!")
+
+    # ---------- Add Scores ----------
+    def add_scores(self):
+        student_id = input("Enter student ID: ")
+
+        student = self.find_student_by_id(student_id)
+
+        if student:
+            try:
+                number_subjects = int(input("Enter number of subjects: "))
+
+                for _ in range(number_subjects):
+                    subject = input("Enter subject name: ")
+                    score = float(input("Enter score: "))
+
+                    if score < 0 or score > 10:
+                        print("Score must be between 0 and 10!")
+                        continue
+
+                    student.add_score(subject, score)
+
+                print("Scores added successfully!")
+
+            except ValueError:
+                print("Invalid score input!")
+
+        else:
+            print("Student not found!")
+
+    # ---------- Search Student ----------
+    def search_student(self):
+        keyword = input("Enter student name or ID: ").lower()
+
+        results = [
+            student for student in self.students
+            if keyword in student.name.lower()
+            or keyword in student.student_id.lower()
+        ]
+
+        if results:
+            print("\n===== SEARCH RESULTS =====")
+            for student in results:
+                print(student)
+        else:
+            print("No matching students found!")
+
+    # ---------- Sort Students ----------
+    def sort_students(self):
+        print("\nSort by:")
+        print("1. GPA")
+        print("2. Name")
+        print("3. Birth Year")
+
+        choice = input("Choose: ")
+
+        if choice == "1":
+            self.students.sort(
+                key=lambda student: student.calculate_gpa(),
+                reverse=True
+            )
+
+        elif choice == "2":
+            self.students.sort(
+                key=lambda student: student.name.lower()
+            )
+
+        elif choice == "3":
+            self.students.sort(
+                key=lambda student: student.birth_year
+            )
+
+        else:
+            print("Invalid choice!")
+            return
+
+        print("Students sorted successfully!")
+
+    # ---------- Overall GPA ----------
+    def overall_gpa(self):
+        if not self.students:
+            print("No students available!")
+            return
+
+        total = sum(student.calculate_gpa() for student in self.students)
+        average = round(total / len(self.students), 2)
+
+        print(f"Overall GPA: {average}")
+
+    # ---------- Save File ----------
+    def save_to_file(self, filename="students.txt"):
+        try:
+            with open(filename, "w", encoding="utf-8") as file:
+                for student in self.students:
+
+                    scores_text = ",".join(
+                        f"{subject}:{score}"
+                        for subject, score in student.scores.items()
+                    )
+
+                    line = (
+                        f"{student.student_id}|"
+                        f"{student.name}|"
+                        f"{student.birth_year}|"
+                        f"{student.major}|"
+                        f"{scores_text}\n"
+                    )
+
+                    file.write(line)
+
+            print("Data saved successfully!")
+
+        except Exception as error:
+            print("Error saving file:", error)
+
+    # ---------- Load File ----------
+    def load_from_file(self, filename="students.txt"):
+        if not os.path.exists(filename):
+            print("File does not exist!")
+            return
+
+        try:
+            self.students.clear()
+
+            with open(filename, "r", encoding="utf-8") as file:
+                for line in file:
+                    data = line.strip().split("|")
+
+                    if len(data) < 5:
+                        continue
+
+                    student_id = data[0]
+                    name = data[1]
+                    birth_year = int(data[2])
+                    major = data[3]
+                    scores_data = data[4]
+
+                    student = Student(
+                        student_id,
+                        name,
+                        birth_year,
+                        major
+                    )
+
+                    if scores_data:
+                        subjects = scores_data.split(",")
+
+                        for item in subjects:
+                            if ":" in item:
+                                subject, score = item.split(":")
+                                student.add_score(
+                                    subject,
+                                    float(score)
+                                )
+
+                    self.students.append(student)
+
+            print("Data loaded successfully!")
+
+        except Exception as error:
+            print("Error loading file:", error)
+
+
+# ==============================
+# MAIN PROGRAM
+# ==============================
+def main():
+    manager = SystemManager()
+
+    while True:
+        print("\n========== STUDENT MANAGEMENT ==========")
+        print("1. Add Student")
+        print("2. Show Students")
+        print("3. Edit Student")
+        print("4. Delete Student")
+        print("5. Add Scores")
+        print("6. Search Student")
+        print("7. Sort Students")
+        print("8. Overall GPA")
+        print("9. Save To File")
+        print("10. Load From File")
+        print("0. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            manager.add_student()
+
+        elif choice == "2":
+            manager.show_students()
+
+        elif choice == "3":
+            manager.edit_student()
+
+        elif choice == "4":
+            manager.delete_student()
+
+        elif choice == "5":
+            manager.add_scores()
+
+        elif choice == "6":
+            manager.search_student()
+
+        elif choice == "7":
+            manager.sort_students()
+
+        elif choice == "8":
+            manager.overall_gpa()
+
+        elif choice == "9":
+            manager.save_to_file()
+
+        elif choice == "10":
+            manager.load_from_file()
+
+        elif choice == "0":
+            print("Exiting program...")
+            break
+
+        else:
+            print("Invalid choice! Please try again.")
+
+
+# ==============================
+# RUN PROGRAM
+# ==============================
+if __name__ == "__main__":
+    main()
