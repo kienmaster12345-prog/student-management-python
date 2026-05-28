@@ -1,0 +1,81 @@
+import os
+from models.student import Student
+
+
+def save_to_file(students, filename="data/students.txt"):
+    try:
+        with open(filename, "w", encoding="utf-8") as file:
+
+            for student in students:
+
+                scores_text = ",".join(
+                    f"{subject}:{score}"
+                    for subject, score
+                    in student.scores.items()
+                )
+
+                line = (
+                    f"{student.student_id}|"
+                    f"{student.name}|"
+                    f"{student.birth_year}|"
+                    f"{student.major}|"
+                    f"{scores_text}\n"
+                )
+
+                file.write(line)
+
+        print("Data saved successfully!")
+
+    except Exception as error:
+        print("Error saving file:", error)
+
+
+def load_from_file(filename="data/students.txt"):
+    students = []
+
+    if not os.path.exists(filename):
+        print("File does not exist!")
+        return students
+
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+
+            for line in file:
+                data = line.strip().split("|")
+
+                if len(data) < 5:
+                    continue
+
+                student_id = data[0]
+                name = data[1]
+                birth_year = int(data[2])
+                major = data[3]
+                scores_data = data[4]
+
+                student = Student(
+                    student_id,
+                    name,
+                    birth_year,
+                    major
+                )
+
+                if scores_data:
+                    subjects = scores_data.split(",")
+
+                    for item in subjects:
+                        if ":" in item:
+                            subject, score = item.split(":")
+
+                            student.add_score(
+                                subject,
+                                float(score)
+                            )
+
+                students.append(student)
+
+        print("Data loaded successfully!")
+
+    except Exception as error:
+        print("Error loading file:", error)
+
+    return students
