@@ -1,0 +1,56 @@
+from services.system_manager import SystemManager
+from services.file_handler import (
+    save_to_file,
+    load_from_file
+)
+from ui.menu import display_menu
+
+
+def main():
+    manager = SystemManager()
+
+    while True:
+        display_menu()
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            manager.add_student()
+
+        elif choice == "2":
+            manager.show_students()
+
+        elif choice == "3":
+            manager.edit_student()
+
+        elif choice == "4":
+            manager.delete_student()
+
+        elif choice == "5":
+            manager.add_scores()
+
+        elif choice == "6":
+            manager.search_student()
+
+        elif choice == "7":
+            manager.sort_students()
+
+        elif choice == "8":
+            manager.overall_gpa()
+
+        elif choice == "9":
+            save_to_file(manager.students)
+
+        elif choice == "10":
+            manager.students = load_from_file()
+
+        elif choice == "0":
+            print("Exiting program...")
+            break
+
+        else:
+            print("Invalid choice!")
+
+
+if __name__ == "__main__":
+    main()
