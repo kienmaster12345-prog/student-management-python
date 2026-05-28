@@ -1,0 +1,13 @@
+def display_menu():
+    print("\n========== STUDENT MANAGEMENT ==========")
+    print("1. Add Student")
+    print("2. Show Students")
+    print("3. Edit Student")
+    print("4. Delete Student")
+    print("5. Add Scores")
+    print("6. Search Student")
+    print("7. Sort Students")
+    print("8. Overall GPA")
+    print("9. Save To File")
+    print("10. Load From File")
+    print("0. Exit")
