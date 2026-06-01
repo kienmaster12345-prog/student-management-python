@@ -1,66 +1,270 @@
+import re
+from file_handler import FileHandler
+# có cả hai phần student và validator
 class Student:
-    def __init__(self, student_id, name, birth_year, major):
-        self.__student_id = student_id
-        self.__name = name
-        self.__birth_year = birth_year
-        self.__major = major
-        self.__scores = {}
+    # ===== khai báo thông tin sinh viên =====
+    def __init__(self):
 
-    # ======================
-    # PROPERTIES
-    # ======================
-    @property
-    def student_id(self):
-        return self.__student_id
+        # ===== nhập tên =====
+        while True:
+            self.__name = input("Họ và tên: ")
+            if re.match(r"^[A-Za-zÀ-ỹ\s]+$", self.__name):
+                print("Hợp lệ")
+                break
+            else:
+                print("Sai rồi, nhập lại đi (có thể có dấu)")
 
-    @property
-    def name(self):
-        return self.__name
+        # ===== nhập MSSV =====
+        while True:
+            self.__student_id = input("Mã số sinh viên: ")
 
-    @name.setter
-    def name(self, value):
-        self.__name = value
+            # kiểm tra format
+            if not re.match(r"^[A-Za-z]{2}\d+$", self.__student_id):
+                print("Sai rồi, nhập lại đi (vd: SE210910)")
+                continue
 
-    @property
-    def birth_year(self):
-        return self.__birth_year
+            # kiểm tra trùng
+            if self.check_duplicate_id(self.__student_id):
+                print("MSSV đã tồn tại, nhập mã khác!")
+                continue
 
-    @birth_year.setter
-    def birth_year(self, value):
-        self.__birth_year = value
+            print("MSSV hợp lệ")
+            break
 
-    @property
-    def major(self):
-        return self.__major
+        # ===== nhập ngày =====
+        while True:
+            try:
+                self.__day = int(input("Ngày sinh: "))
+                if 1 <= self.__day <= 31:
+                    print("Hợp lệ")
+                    break
+                else:
+                    print("Phải nhập số từ 1 đến 31")
+            except ValueError:
+                print("Sai! Chỉ được nhập số.")
 
-    @major.setter
-    def major(self, value):
-        self.__major = value
+        # ===== nhập tháng =====
+        while True:
+            try:
+                self.__month = int(input("Tháng sinh: "))
+                if 1 <= self.__month <= 12:
+                    print("Hợp lệ")
+                    break
+                else:
+                    print("Phải nhập số từ 1 đến 12")
+            except ValueError:
+                print("Sai! Chỉ được nhập số.")
 
-    @property
-    def scores(self):
-        return self.__scores
+        # ===== nhập năm =====
+        while True:
+            try:
+                self.__year = int(input("Năm sinh (1990-2010): "))
+                if 1990 <= self.__year <= 2010:
+                    print("Hợp lệ")
+                    break
+                else:
+                    print("Phải nhập số từ 1990 đến 2010")
+            except ValueError:
+                print("Sai! Chỉ được nhập số.")
 
-    # ======================
-    # METHODS
-    # ======================
-    def add_score(self, subject, score):
+        # ===== nhập ngành =====
+        while True:
+            self.__major = input("Nhập ngành học (English): ")
+            if re.match(r"^[A-Za-z\s]+$", self.__major):
+                print("Hợp lệ")
+                break
+            else:
+                print("Phải nhập chữ")
+
+        self.__gpa = 0.0 #mac dinh
+        self.__scores = {} #tap hop diem
+
+    # ===== kiểm tra trùng MSSV =====
+    def check_duplicate_id(self, student_id):
+        fh = FileHandler("students.txt")
+
+        lines = fh.read_lines()
+
+        for line in lines:
+            old_id = line.split("|")[0]
+
+            if old_id == student_id:
+               return True
+
+        return False
+ 
+    
+    # ===== thêm điểm =====
+    def add_score(self):
+
+    # hỏi có muốn nhập không
+     while True:
+
+        choice = input("Có nhập môn không (y/n): ").lower()
+
+        if choice == "y":
+            break
+
+        elif choice == "n":
+            return
+
+        else:
+            print("Chỉ được nhập y hoặc n!")
+
+    # ===== nhập môn =====
+     while True:
+
+        # nhập tên môn
+        while True:
+
+            subject = input("Nhập tên môn học: ").strip()
+
+            # check rỗng
+            if subject == "":
+                print("Không được để trống!")
+                continue
+
+            # check format
+            if re.match(r"^[A-Za-zÀ-ỹ\s]+$", subject):
+                break
+
+            else:
+                print("Tên môn không hợp lệ!")
+
+        # ===== nhập điểm =====
+        while True:
+
+            try:
+                score = float(input("Nhập điểm: "))
+
+                if 0 <= score <= 10:
+                    break
+
+                else:
+                    print("Điểm phải từ 0 đến 10")
+
+            except ValueError:
+                print("Điểm phải là số!")
+
+        # ===== lưu điểm =====
         self.__scores[subject] = score
+        print("Đã thêm thành công!")
 
+        # ===== hỏi thêm =====
+        while True:
+
+            choice = input("Thêm môn khác? (y/n): ").lower()
+
+            if choice == "y":
+                break
+
+            elif choice == "n":
+                return
+
+            else:
+                print("Chỉ được nhập y hoặc n!")
+
+    # ===== sửa điểm =====
+    def update_score(self):
+
+    # chưa có môn
+     if len(self.__scores) == 0:
+        print("Chưa có môn nào để sửa.")
+        return
+
+    # hỏi có muốn sửa không
+     while True:
+
+        choice = input("Có muốn sửa điểm không (y/n): ").lower()
+
+        if choice == "y":
+            break
+
+        elif choice == "n":
+            return
+
+        else:
+            print("Chỉ được nhập y hoặc n!")
+
+    # hiện danh sách môn
+     print("Các môn hiện có:", self.__scores)
+
+    # ===== nhập môn =====
+     while True:
+
+        subject = input("Nhập môn muốn sửa: ").strip()
+
+        # check rỗng
+        if subject == "":
+            print("Không được để trống!")
+            continue
+
+        # check format
+        if not re.match(r"^[A-Za-zÀ-ỹ\s]+$", subject):
+            print("Tên môn không hợp lệ!")
+            continue
+
+        # check tồn tại
+        if subject not in self.__scores:
+            print("Môn không tồn tại!")
+            continue
+
+        break
+
+    # ===== nhập điểm mới =====
+     while True:
+
+        try:
+            new_score = float(input("Nhập điểm mới: "))
+
+            # check khoảng điểm
+            if 0 <= new_score <= 10:
+
+                self.__scores[subject] = new_score
+                print("Cập nhật thành công!")
+                break
+
+            else:
+                print("Điểm phải từ 0 đến 10")
+
+        except ValueError:
+            print("Điểm phải là số!")
+    # ===== tính GPA =====
     def calculate_gpa(self):
         if len(self.__scores) == 0:
-            return 0.0
+            self.__gpa = 0
+        else:
+            self.__gpa = sum(self.__scores.values()) / len(self.__scores)
 
-        return round(
-            sum(self.__scores.values()) / len(self.__scores),
-            2
-        )
+        return self.__gpa
 
+    # ===== lấy bảng điểm =====
+    def get_scores(self):
+        return self.__scores
+
+    # ===== hiển thị =====
     def __str__(self):
         return (
-            f"ID: {self.student_id} | "
-            f"Name: {self.name} | "
-            f"Birth Year: {self.birth_year} | "
-            f"Major: {self.major} | "
-            f"GPA: {self.calculate_gpa()}"
+            f"{self.__student_id} | "
+            f"{self.__name} | "
+            f"{self.__day}/{self.__month}/{self.__year} | "
+            f"{self.__major} | "
+            f"{self.__scores}|"
+            f"GPA: {self.__gpa:.2f}"
         )
+
+    # ===== ghi file =====
+    def to_file_string(self):
+        return (
+            f"{self.__student_id}|"
+            f"{self.__name}|"
+            f"{self.__day}/{self.__month}/{self.__year}|"
+            f"{self.__major}|"
+            f"{self.__scores} |"
+            f"{self.__gpa:.2f}\n"
+        )
+    #==== lưu file ====
+    def save_to_file(self):
+       fh = FileHandler("students.txt")
+       fh.write_lines([self.to_file_string()])
+       print("Đã lưu vào students.txt")
