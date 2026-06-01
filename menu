@@ -1,13 +1,44 @@
-def display_menu():
-    print("\n========== STUDENT MANAGEMENT ==========")
-    print("1. Add Student")
-    print("2. Show Students")
-    print("3. Edit Student")
-    print("4. Delete Student")
-    print("5. Add Scores")
-    print("6. Search Student")
-    print("7. Sort Students")
-    print("8. Overall GPA")
-    print("9. Save To File")
-    print("10. Load From File")
+from student import Student
+
+s = Student()
+
+while True:
+
+    print("\n===== MENU =====")
+    print("1. Add score")
+    print("2. Update score")
+    print("3. Show info")
+    print("4. Save")
     print("0. Exit")
+
+    choice = input("Chọn: ")
+
+    if choice == "1":
+
+        s.add_score()
+        s.calculate_gpa()
+
+    elif choice == "2":
+
+        s.update_score()
+        s.calculate_gpa()
+
+    elif choice == "3":
+
+        print("\nThông tin sinh viên:")
+        print(s)
+
+        print("\nBảng điểm:")
+        print(s.get_scores())
+
+    elif choice == "4":
+
+        s.save_to_file()
+
+    elif choice == "0":
+
+        print("Thoát chương trình.")
+        break
+
+    else:
+        print("Lựa chọn không hợp lệ!")
