@@ -18,7 +18,19 @@ class FileHandler:
         with open(self.file_path, "a", encoding="utf-8") as f:
             for line in lines:
                 f.write(line)
+            f.flush()
 
     # kiểm tra file tồn tại
     def file_exists(self):
         return os.path.exists(self.file_path)
+
+    #sửa file 
+    def rewrite_lines(self, lines):
+        with open(self.file_path, "w", encoding="utf-8") as f:
+            for line in lines:
+                f.write(line)
+
+    # Tìm kiếm theo tên sử dụng List Comprehension
+    def search_by_name(self, name: str):
+        target_name = name.strip().lower()
+        return [s for s in self.students if target_name in s.to_file_string().split('|')[1].lower()]
