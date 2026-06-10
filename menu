@@ -1,42 +1,99 @@
+#sửa lại số thứ tự và xóa cái số 8 lưu file vì có save file rồi!!!!!!!!
+
+
+
+
+
 from student import Student
-
-s = Student()
-
+from system_manager import SystemManager
+sm = SystemManager()
+s = None
 while True:
 
     print("\n===== MENU =====")
-    print("1. Add score")
-    print("2. Update score")
-    print("3. Show info")
-    print("4. Save")
+    print("1.nhập thông tin học sinh")
+    print("2. Add score")
+    print("3. Update score")
+    print("4. Show info")
+    print("5. Save")
+    print("6. Sửa điểm sinh viên")
+    print("7. Xóa sinh viên")
+    print("8. kiếm tên sinh viên")
+    print("9. kiếm MSSV sinh viên")
+    print("10. tổng trung bình điểm gpa")
+    print("11.sắp xếp gọn gàng lại")
     print("0. Exit")
 
     choice = input("Chọn: ")
-
     if choice == "1":
-
-        s.add_score()
-        s.calculate_gpa()
-
+            s = Student()
+            sm.add_student(s)
     elif choice == "2":
-
-        s.update_score()
-        s.calculate_gpa()
-
+        if s is not None:
+            s.add_score()
+            s.calculate_gpa()
+        else:
+            print("vui lòng nhập thông tin sinh viên")
     elif choice == "3":
-
-        print("\nThông tin sinh viên:")
-        print(s)
-
-        print("\nBảng điểm:")
-        print(s.get_scores())
+        if s is not None:
+            s.update_score()
+            s.calculate_gpa()
+        else:
+            print("vui lòng nhập thông tin sinh viên")
 
     elif choice == "4":
+        if s is not None:
+        
+            print("\nThông tin sinh viên:")
+            print(s)
 
-        s.save_to_file()
+            print("\nBảng điểm:")
+            print(s.get_scores())
+        else:
+            print("vui lòng nhập thông tin sinh viên")
+
+    elif choice == "5":
+        if s is not None:
+       
+            s.save_to_file()
+            sm.sort_students_by_name()
+        else:
+            print("vui lòng nhập thông tin sinh viên")
+    elif choice == "6":
+        student_id = input("Nhập MSSV cần sửa: ")
+        sm.edit_student(student_id)
+        sm.sort_students_by_name()
+
+    elif choice == "7":
+        student_id = input("Nhập tên hoặc MSSV cần xóa: ")
+        sm.delete_student(student_id)
+
+    elif choice == "8":
+        
+        name = input("Nhập tên sinh viên cần tìm: ")
+        results = sm.search_by_name(name)
+        print("\n[Kết quả] Tìm thấy sinh viên tương thích:")
+        for idx, s in enumerate(results, 1):
+            print(f"{idx}. {s}")
+
+
+    elif choice == "9":
+        mssv = input("nhập MSSV để tìm kiếm:")
+        results = sm.search_by_id(mssv)
+        if results:
+            print(f"\n[Kết quả] Tìm thấy sinh viên: {results[0]}")
+        else:
+            print("sinh viên không có trong danh sách")
+
+
+    elif choice == "10":
+        results = sm.get_overall_gpa()
+
+    elif choice == "11":
+        results = sm.sort_students_by_name
 
     elif choice == "0":
-
+        sm.save_to_file()
         print("Thoát chương trình.")
         break
 
