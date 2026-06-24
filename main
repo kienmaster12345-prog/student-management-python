@@ -1,56 +1,58 @@
 from services.system_manager import SystemManager
-from services.file_handler import (
-    save_to_file,
-    load_from_file
+from services.score_manager import ScoreManager
+from ui.menu import (
+    display_main_menu,
+    student_management_menu,
+    score_management_menu,
+    search_menu,
+    sort_menu,
 )
-from ui.menu import display_menu
 
 
 def main():
-    manager = SystemManager()
+    sm = SystemManager()
+    scm = ScoreManager(sm)
+
+    try:
+        sm.load_from_file()
+    except FileNotFoundError:
+        print("Chưa có file dữ liệu. Bắt đầu với danh sách trống.")
+    except Exception as e:
+        print(f"Lỗi khi tải file: {e}")
 
     while True:
-        display_menu()
-
-        choice = input("Enter your choice: ")
-
+        choice = display_main_menu()
         if choice == "1":
-            manager.add_student()
-
+            student_management_menu(sm)
         elif choice == "2":
-            manager.show_students()
-
+            score_management_menu(sm, scm)
         elif choice == "3":
-            manager.edit_student()
-
+            search_menu(sm)
         elif choice == "4":
-            manager.delete_student()
-
+            sort_menu(sm)
         elif choice == "5":
-            manager.add_scores()
-
+            gpa = sm.get_overall_gpa()
+            print(f"GPA trung bình toàn lớp: {gpa:.2f}")
         elif choice == "6":
-            manager.search_student()
-
+            sm.save_to_file()
         elif choice == "7":
-            manager.sort_students()
-
-        elif choice == "8":
-            manager.overall_gpa()
-
-        elif choice == "9":
-            save_to_file(manager.students)
-
-        elif choice == "10":
-            manager.students = load_from_file()
-
+            sm.load_from_file()
         elif choice == "0":
-            print("Exiting program...")
+            while True:
+                confirm = input("Bạn có muốn lưu dữ liệu trước khi thoát? (y/n): ").strip().lower()
+                if confirm in ["y", "n"]:
+                    break
+                print("Lựa chọn không hợp lệ! Vui lòng chỉ nhập 'y' (Có) hoặc 'n' (Không).")
+            
+            if confirm == "y":
+                sm.save_to_file()
+                
+            print("Tạm biệt!")
             break
-
         else:
-            print("Invalid choice!")
+            print("Vui lòng chọn số từ 0 đến 7.")
 
 
 if __name__ == "__main__":
     main()
+
