@@ -1,101 +1,283 @@
-#sửa lại số thứ tự và xóa cái số 8 lưu file vì có save file rồi!!!!!!!!
+from services.system_manager import SystemManager
+from services.score_manager import ScoreManager
+from models.student import Student  # <--- QUAN TRỌNG: PHẢI CÓ DÒNG NÀY
 
 
+def display_main_menu():
+    print("\n" + "=" * 40)
+    print("       HỆ THỐNG QUẢN LÝ SINH VIÊN")
+    print("=" * 40)
+    print("1. Quản lý sinh viên (thêm/sửa/xóa/xem)")
+    print("2. Quản lý điểm số (nhập/sửa/xem)")
+    print("3. Tìm kiếm sinh viên")
+    print("4. Sắp xếp sinh viên")
+    print("5. Thống kê GPA toàn lớp")
+    print("6. Lưu dữ liệu vào file")
+    print("7. Tải dữ liệu từ file")
+    print("0. Thoát")
+    return input("Chọn chức năng: ")
 
 
+def student_management_menu(sm):
+    while True:
+        print("\n--- QUẢN LÝ SINH VIÊN ---")
+        print("1. Thêm sinh viên mới")
+        print("2. Sửa thông tin sinh viên")
+        print("3. Xóa sinh viên")
+        print("4. Xem danh sách tất cả")
+        print("0. Quay lại")
+        choice = input("Chọn: ")
+        if choice == "1":
+            print("bạn có muốn thêm sinh viên mới?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue 
+            while True:
+                sid = input("Mã số sinh viên (VD: SE210910): ").strip().upper()
 
-from student import Student
-from system_manager import SystemManager
-sm = SystemManager()
-s = None
-while True:
+                try:
+                    from utils.validator import is_valid_id
+                    if not is_valid_id(sid):
+                        raise ValueError("Mã số sinh viên không hợp lệ (VD: SE210910)")
 
-    print("\n===== MENU =====")
-    print("1.nhập thông tin học sinh")
-    print("2. Add score")
-    print("3. Update score")
-    print("4. Show info")
-    print("5. Save")
-    print("6. Sửa điểm sinh viên")
-    print("7. Xóa sinh viên")
-    print("8. kiếm tên sinh viên")
-    print("9. kiếm MSSV sinh viên")
-    print("10. tổng trung bình điểm gpa")
-    print("11.sắp xếp gọn gàng lại")
-    print("0. Exit")
+                    if sm.search_by_id(sid):
+                        print(f"Lỗi: Mã số {sid} đã tồn tại trong hệ thống! Vui lòng nhập lại từ đầu.")
+                        continue  
+                    break
+                except ValueError as e:
+                    print(f"Không hợp lệ: {e}. Vui lòng nhập lại!")
 
-    choice = input("Chọn: ")
-    if choice == "1":
-            s = Student()
-            sm.add_student(s)
-    elif choice == "2":
-        if s is not None:
-            s.add_score()
-            s.calculate_gpa()
-        else:
-            print("vui lòng nhập thông tin sinh viên")
-    elif choice == "3":
-        if s is not None:
-            s.update_score()
-            s.calculate_gpa()
-        else:
-            print("vui lòng nhập thông tin sinh viên")
+    
+            while True:
+                name = input("Họ tên: ").strip().upper()
+                from utils.validator import is_valid_name
 
-    elif choice == "4":
-        if s is not None:
+                if is_valid_name(name):
+                    break
+                print(
+                    "Không hợp lệ: Tên chỉ được chứa chữ cái và dấu cách. Vui lòng nhập lại!"
+                )
+
+            while True:
+                try:
+                    day = int(input("Ngày sinh: "))
+                    from utils.validator import is_valid_day
+
+                    if not is_valid_day(day):
+                        raise ValueError("Ngày sinh phải từ 1 đến 31")
+                    break
+                except ValueError as e:
+                    print(f"Không hợp lệ: {e}. Vui lòng nhập lại!")
+
+            while True:
+                try:
+                    month = int(input("Tháng sinh: "))
+                    from utils.validator import is_valid_month
+
+                    if not is_valid_month(month):
+                        raise ValueError("Tháng sinh phải từ 1 đến 12")
+                    break
+                except ValueError as e:
+                    print(f"Không hợp lệ: {e}. Vui lòng nhập lại!")
+
+            while True:
+                try:
+                    year = int(input("Năm sinh (1990-2010): "))
+                    from utils.validator import is_valid_year
+
+                    if not is_valid_year(year):
+                        raise ValueError("Năm sinh phải từ 1990 đến 2010")
+                    break
+                except ValueError as e:
+                    print(f"Không hợp lệ: {e}. Vui lòng nhập lại!")
+
+            while True:
+                major = input("Ngành học: ").strip().upper()
+                from utils.validator import is_valid_major
+
+                if is_valid_major(major):
+                    break
+                print("Không hợp lệ: Ngành học chỉ gồm chữ cái. Vui lòng nhập lại!")
+
+            try:
+                student = Student(sid, name, day, month, year, major)
+                sm.add_student(student)
+                print("\n Thêm sinh viên thành công!")
+                sm.show_all()
+            except Exception as e:
+                print(f"Lỗi hệ thống: {e}")
+        elif choice == "2":
+            print("bạn có muốn sửa thông tin sinh viên?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue 
+            
+            sid = input("Nhập mã số sinh viên cần sửa: ")
+            try:
+                new_name = input(
+                    "Tên mới (bỏ trống nếu không đổi): "
+                    ).strip().upper()
+                new_day = input(
+                    "Ngày sinh mới (bỏ trống nếu không đổi): "
+                    ).strip()
+                new_month = input(
+                    "Tháng sinh mới (bỏ trống nếu không đổi): "
+                    ).strip()
+                new_year = input(
+                    "Năm sinh mới (bỏ trống nếu không đổi): "
+                    ).strip()
+                new_major = input(
+                    "Ngành mới (bỏ trống nếu không đổi): "
+                    ).strip()
+                sm.edit_student(
+                    sid,
+                    new_name if new_name else None,
+                    int(new_day) if new_day else None,
+                    int(new_month) if new_month else None,
+                    int(new_year) if new_year else None,
+                    new_major if new_major else None,
+                )
+                print("Cập nhật thành công!")
+            except Exception as e:
+                print(f"Lỗi: {e}")
         
-            print("\nThông tin sinh viên:")
-            print(s)
-
-            print("\nBảng điểm:")
-            print(s.get_scores())
-        else:
-            print("vui lòng nhập thông tin sinh viên")
-
-    elif choice == "5":
-        if s is not None:
-       
-            s.save_to_file()
-            sm.sort_students_by_name()
-        else:
-            print("vui lòng nhập thông tin sinh viên")
-    elif choice == "6":
-        student_id = input("Nhập MSSV cần sửa: ")
-        sm.edit_student(student_id)
-        sm.sort_students_by_name()
-
-    elif choice == "7":
-        student_id = input("Nhập tên hoặc MSSV cần xóa: ")
-        sm.delete_student(student_id)
-
-    elif choice == "8":
         
-        name = input("Nhập tên sinh viên cần tìm: ")
-        results = sm.search_by_name(name)
-        print("\n[Kết quả] Tìm thấy sinh viên tương thích:")
-        for idx, s in enumerate(results, 1):
-            print(f"{idx}. {s}")
-
-
-    elif choice == "9":
-        mssv = input("nhập MSSV để tìm kiếm:")
-        results = sm.search_by_id(mssv)
-        if results:
-            print(f"\n[Kết quả] Tìm thấy sinh viên: {results[0]}")
+        elif choice == "3":
+            print("bạn có muốn xóa sinh viên?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue 
+            sid = input("Nhập mã số sinh viên cần xóa: ").strip().upper()
+            try:
+                sm.delete_student(sid)
+                print("Xóa thành công!")
+            except Exception as e:
+                print(f"Lỗi: {e}")
+        
+        
+        elif choice == "4":
+            sm.show_all()
+        elif choice == "0":
+            break
         else:
-            print("sinh viên không có trong danh sách")
+            print("Lựa chọn không hợp lệ.")
 
 
-    elif choice == "10":
-        results = sm.get_overall_gpa()
+def score_management_menu(sm, scm):
+    while True:
+        print("\n--- QUẢN LÝ ĐIỂM ---")
+        print("1. Nhập điểm cho sinh viên")
+        print("2. Sửa điểm môn học")
+        print("3. Sửa tên môn học")
+        print("4. Xem bảng điểm của sinh viên")
+        print("0. Quay lại")
+        choice = input("Chọn: ")
+        if choice == "1":
+            print("bạn có muốn nhập điểm cho sinh viên?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue
+            if a == "1": 
+                sid = input("Nhập mã số sinh viên: ").upper()
+                scm.enter_scores_for_student(sid)
+        elif choice == "2":
+            print("bạn có muốn sửa điểm môn học sinh viên?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue
+            if a == "1": 
+                sid = input("Nhập mã số sinh viên: ").upper()
+                scm.update_score_for_student(sid)
+        elif choice == "3":
+            print("bạn có sửa tên môn học cho sinh viên?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue
+            if a == "1": 
+                sid = input("Nhập mã số sinh viên: ").upper()
+                scm.update_subject_name_for_student(sid)
+        elif choice == "4":
+            print("Bạn có muốn xem bảng điểm của sinh viên?") 
+            print("1. Có")
+            print("2. Không")
+            a = input("vui lòng nhập: ").strip()
+            if a == "2":
+                print("Đã hủy bỏ thao tác.")
+                continue
+            if a == "1": 
+                sid = input("Nhập mã số sinh viên: ").upper()
+                scm.view_scores(sid)
+        elif choice == "0":
+            break
+        else:
+            print("Lựa chọn không hợp lệ.")
 
-    elif choice == "11":
-        results = sm.sort_students_by_name
 
-    elif choice == "0":
-        sm.save_to_file()
-        print("Thoát chương trình.")
-        break
+def search_menu(sm):
+    while True:
+        print("\n--- TÌM KIẾM SINH VIÊN ---")
+        print("1. Theo tên (chứa chuỗi)")
+        print("2. Theo mã số chính xác")
+        print("0. Quay lại")
+        choice = input("Chọn: ")
+        if choice == "1":
+            keyword = input("Nhập tên (hoặc một phần): ").upper()
+            results = sm.search_by_name(keyword)
+            if results:
+                for s in results:
+                    print(s)
+            else:
+                print("Không tìm thấy.")
+        elif choice == "2":
+            sid = input("Nhập mã số: ").upper()
+            results = sm.search_by_id(sid)
+            if results:
+                print(results[0])
+            else:
+                print("Không tìm thấy.")
+        elif choice == "0":
+            break
+        else:
+            print("Sai lựa chọn.")
 
-    else:
-        print("Lựa chọn không hợp lệ!")
+def sort_menu(sm):
+    while True:
+        print("\n--- SẮP XẾP SINH VIÊN ---")
+        print("1. Theo GPA (cao xuống thấp)")
+        print("2. Theo tên (A-Z)")
+        print("3. Theo năm sinh (tăng dần)")
+        print("0. Quay lại")
+        choice = input("Chọn: ")
+        if choice == "1":
+            sm.sort_by_gpa()
+            print("Đã sắp xếp. Dùng chức năng 'Xem danh sách' để kiểm tra.")
+        elif choice == "2":
+            sm.sort_by_name()
+            print("Đã sắp xếp. Dùng chức năng 'Xem danh sách' để kiểm tra.")
+        elif choice == "3":
+            sm.sort_by_birth_year()
+            print("Đã sắp xếp. Dùng chức năng 'Xem danh sách' để kiểm tra.")
+        elif choice == "0":
+            break
+        else:
+            print("Sai lựa chọn.")
+        
+
