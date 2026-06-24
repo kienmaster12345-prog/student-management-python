@@ -1,0 +1,105 @@
+from utils.validator import is_valid_score
+from utils.validator import is_valid_score, is_valid_subject
+
+
+class ScoreManager:
+    def __init__(self, system_manager):
+        self.__sm = system_manager  # private
+
+    # --- Public methods ---
+    def enter_scores_for_student(self, student_id):
+        results = self.__sm.search_by_id(student_id)
+        student = results[0] if results else None
+        if not student:
+            print(f"Không tìm thấy sinh viên ID {student_id}")
+            return
+        print(f"Nhập điểm cho {student.name} (ID: {student.student_id})")
+        while True:
+            subject = input("Tên môn học (Enter để kết thúc): ").strip().upper()
+            if subject == "":
+                break
+            if not is_valid_subject(subject):
+                print("Tên môn học không hợp lệ. Vui lòng nhập lại!")
+                continue
+            try:
+                score = float(input("Điểm số: "))
+                if not is_valid_score(score):
+                    print("Điểm phải từ 0 đến 10, nhập lại!")
+                    continue
+                student.add_score(subject, score)
+                print(f"Đã thêm {subject}: {score}")
+            except ValueError:
+                print("Điểm phải là số thực.")
+        print(f"GPA hiện tại của {student.name}: {student.gpa:.2f}")
+
+    def update_score_for_student(self, student_id):
+        results = self.__sm.search_by_id(student_id)
+        student = results[0] if results else None
+        if not student:
+            print(f"Không tìm thấy sinh viên ID {student_id}")
+            return
+        if not student.scores:
+            print("Sinh viên chưa có điểm nào.")
+            return
+        print(f"Các môn hiện có: {list(student.scores.keys())}")
+        subject = input("Nhập tên môn cần sửa: ").strip().upper()
+        if subject not in student.scores:
+            print("Môn không tồn tại!")
+            return
+        try:
+            new_score = float(input("Điểm mới: "))
+            if not is_valid_score(new_score):
+                print("Điểm không hợp lệ (0-10).")
+                return
+            student.update_score(subject, new_score)
+            print(f"Đã cập nhật {subject} thành {new_score}")
+        except ValueError:
+            print("Điểm phải là số.")
+
+    def view_scores(self, student_id):
+        results = self.__sm.search_by_id(student_id)
+        student = results[0] if results else None
+        if not student:
+            print(f"Không tìm thấy sinh viên ID {student_id}")
+            return
+        if not student.scores:
+            print("Chưa có điểm nào.")
+        else:
+            print(f"Bảng điểm của {student.name}:")
+            for sub, sc in student.scores.items():
+                print(f"  {sub}: {sc}")
+            print(f"GPA: {student.gpa:.2f}")
+
+    def calculate_class_gpa(self):
+        overall = self.__sm.get_overall_gpa()
+        print(f"GPA trung bình toàn lớp: {overall:.2f}")
+        return overall
+    
+    def update_subject_name_for_student(self, student_id):
+        results = self.__sm.search_by_id(student_id)
+        student = results[0] if results else None
+        if not student:
+            print(f"Không tìm thấy sinh viên ID {student_id}")
+            return
+        if not student.scores:
+            print("Sinh viên chưa có môn nào để nhập!.")
+            return
+        
+        
+        print(f"Các môn hiện có: {list(student.scores.keys())}")
+        old_subject = input("Nhập tên môn học nhập sai cần sửa: ").strip().upper()
+        if old_subject not in student.scores:
+            print("Môn không tồn tại!")
+            return
+            
+        new_subject = input("Nhập tên môn học mới chính xác: ").strip().upper()
+
+        if not is_valid_subject(new_subject):
+            print("Tên môn học mới không hợp lệ! Chỉ được chứa chữ cái và khoảng trắng.")
+            return
+        try:
+            student.update_subject_name(old_subject, new_subject)
+            print(f"Đã đổi tên môn '{old_subject}' thành '{new_subject}' thành công!")
+        except Exception as e:
+            print(f"Lỗi: {e}")
+
