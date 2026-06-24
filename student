@@ -1,285 +1,156 @@
-import re
-from file_handler import FileHandler
-# có cả hai phần student và validator
+import json
+from utils.validator import (
+    is_valid_id,
+    is_valid_name,
+    is_valid_day,
+    is_valid_month,
+    is_valid_year,
+    is_valid_major,
+    is_valid_score,
+)
+
+
 class Student:
-     # ===== kiểm tra trùng MSSV =====
-    def check_duplicate_id(self, student_id):
-            fh = FileHandler("students.txt")
+    def __init__(self, student_id, name, day, month, year, major, scores=None, gpa=0.0):
+        # private attributes
+        self.__student_id = None
+        self.__name = None
+        self.__day = None
+        self.__month = None
+        self.__year = None
+        self.__major = None
+        self.__scores = None
+        self.__gpa = None
 
-            lines = fh.read_lines()
+        # set thông qua setter (có validation)
+        self.student_id = student_id
+        self.name = name
+        self.day = day
+        self.month = month
+        self.year = year
+        self.major = major
+        self.scores = scores if scores is not None else {}
+        self.__gpa = gpa if gpa else self.calculate_gpa()
 
-            for line in lines:
-                old_id = line.split("|")[0]
+    # --- Public getters / setters (vì cần truy cập từ bên ngoài) ---
+    @property
+    def student_id(self):
+        return self.__student_id
 
-                if old_id == student_id:
-                    return True
+    @student_id.setter
+    def student_id(self, value):
+        if not is_valid_id(value):
+            raise ValueError("Mã số sinh viên không hợp lệ (VD: SE210910)")
+        self.__student_id = value
 
-            return False
-    # ===== khai báo thông tin sinh viên =====
-    def __init__(self, student_id=None, name=None, day=None, month=None, year=None, major=None, scores=None, gpa=0.0):
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        if not is_valid_name(value):
+            raise ValueError("Tên chỉ được chứa chữ cái và dấu cách")
+        self.__name = value.strip()
+
+    @property
+    def day(self):
+        return self.__day
+
+    @day.setter
+    def day(self, value):
+        if not is_valid_day(value):
+            raise ValueError("Ngày sinh phải từ 1 đến 31")
+        self.__day = value
+
+    @property
+    def month(self):
+        return self.__month
+
+    @month.setter
+    def month(self, value):
+        if not is_valid_month(value):
+            raise ValueError("Tháng sinh phải từ 1 đến 12")
+        self.__month = value
+
+    @property
+    def year(self):
+        return self.__year
+
+    @year.setter
+    def year(self, value):
+        if not is_valid_year(value):
+            raise ValueError("Năm sinh phải từ 1990 đến 2010")
+        self.__year = value
+
+    @property
+    def major(self):
+        return self.__major
+
+    @major.setter
+    def major(self, value):
+        if not is_valid_major(value):
+            raise ValueError("Ngành học chỉ gồm chữ cái")
+        self.__major = value.strip()
+
+    @property
+    def scores(self):
+        return self.__scores
+
+    @scores.setter
+    def scores(self, value):
+        if not isinstance(value, dict):
+            raise ValueError("Điểm số phải là một dictionary")
+        self.__scores = value
+
+    @property
+    def gpa(self):
+        return self.__gpa
+
+    # --- Public methods ---
+    def add_score(self, subject, score):
+        if not is_valid_score(score):
+            raise ValueError("Điểm phải nằm trong khoảng 0-10")
+        self.__scores[subject] = score
+        self.__gpa = self.calculate_gpa()
+
+    def update_score(self, subject, new_score):
+        if subject not in self.__scores:
+            raise KeyError(f"Môn '{subject}' chưa có trong bảng điểm")
+        self.add_score(subject, new_score)
+
+
+    def update_subject_name(self, old_subject, new_subject):
+        if old_subject not in self.__scores:
+            raise KeyError(f"Môn '{old_subject}' chưa có trong bảng điểm")
+        if not new_subject.strip():
+            raise ValueError("Tên môn học mới không được để trống")
         
-        if student_id is not None:
-            self.__student_id = student_id
-            self.__name = name
-            self.__day = day
-            self.__month = month
-            self.__year = year
-            self.__major = major
-            self.__scores = scores if scores is not None else {}
-            self.__gpa = gpa
-        else:
         
+        score = self.__scores.pop(old_subject)
+        self.__scores[new_subject.strip()] = score
 
-        # ===== nhập tên =====
-            while True:
-                self.__name = input("Họ và tên: ")
-                if re.match(r"^[A-Za-zÀ-ỹ\s]+$", self.__name):
-                    print("Hợp lệ")
-                    break
-                else:
-                    print("Sai rồi, nhập lại đi (có thể có dấu)")
-
-            # ===== nhập MSSV =====
-            while True:
-                self.__student_id = input("Mã số sinh viên: ")
-
-                # kiểm tra format
-                if not re.match(r"^[A-Za-z]{2}\d+$", self.__student_id):
-                    print("Sai rồi, nhập lại đi (vd: SE210910)")
-                    continue
-
-                # kiểm tra trùng
-                if self.check_duplicate_id(self.__student_id):
-                    print("MSSV đã tồn tại, nhập mã khác!")
-                    continue
-
-                print("MSSV hợp lệ")
-                break
-
-            # ===== nhập ngày =====
-            while True:
-                try:
-                    self.__day = int(input("Ngày sinh: "))
-                    if 1 <= self.__day <= 31:
-                        print("Hợp lệ")
-                        break
-                    else:
-                        print("Phải nhập số từ 1 đến 31")
-                except ValueError:
-                    print("Sai! Chỉ được nhập số.")
-
-            # ===== nhập tháng =====
-            while True:
-                try:
-                    self.__month = int(input("Tháng sinh: "))
-                    if 1 <= self.__month <= 12:
-                        print("Hợp lệ")
-                        break
-                    else:
-                        print("Phải nhập số từ 1 đến 12")
-                except ValueError:
-                    print("Sai! Chỉ được nhập số.")
-
-            # ===== nhập năm =====
-            while True:
-                try:
-                    self.__year = int(input("Năm sinh (1990-2010): "))
-                    if 1990 <= self.__year <= 2010:
-                        print("Hợp lệ")
-                        break
-                    else:
-                        print("Phải nhập số từ 1990 đến 2010")
-                except ValueError:
-                    print("Sai! Chỉ được nhập số.")
-
-            # ===== nhập ngành =====
-            while True:
-                self.__major = input("Nhập ngành học (English): ")
-                if re.match(r"^[A-Za-z\s]+$", self.__major):
-                    print("Hợp lệ")
-                    break
-                else:
-                    print("Phải nhập chữ")
-
-            self.__gpa = 0.0 #mac dinh
-            self.__scores = {} #tap hop diem
-
-    
-    # === truy cập qua getter ===
-    def get_id(self):
-            return self.__student_id
-
-        # ===== thêm điểm =====
-    def add_score(self):
-
-        # hỏi có muốn nhập không
-            while True:
-
-                choice = input("Có nhập môn không (y/n): ").lower()
-
-                if choice == "y":
-                    break
-
-                elif choice == "n":
-                    return
-
-                else:
-                    print("Chỉ được nhập y hoặc n!")
-
-            # ===== nhập môn =====
-            while True:
-
-                # nhập tên môn
-                while True:
-
-                    subject = input("Nhập tên môn học: ").strip()
-
-                    # check rỗng
-                    if subject == "":
-                        print("Không được để trống!")
-                        continue
-
-                    # check format
-                    if re.match(r"^[A-Za-zÀ-ỹ\s]+$", subject):
-                        break
-
-                    else:
-                        print("Tên môn không hợp lệ!")
-
-                # ===== nhập điểm =====
-                while True:
-
-                    try:
-                        score = float(input("Nhập điểm: "))
-
-                        if 0 <= score <= 10:
-                            break
-
-                        else:
-                            print("Điểm phải từ 0 đến 10")
-
-                    except ValueError:
-                        print("Điểm phải là số!")
-
-                # ===== lưu điểm =====
-                self.__scores[subject] = score
-                print("Đã thêm thành công!")
-
-                # ===== hỏi thêm =====
-                while True:
-
-                    choice = input("Thêm môn khác? (y/n): ").lower()
-
-                    if choice == "y":
-                        break
-
-                    elif choice == "n":
-                        return
-
-                    else:
-                        print("Chỉ được nhập y hoặc n!")
-
-            # ===== sửa điểm =====
- # ===== sửa điểm =====
-    def update_score(self):
-        # Chưa có môn nào thì không sửa
-        if len(self.__scores) == 0:
-            print("Chưa có môn nào để sửa.")
-            return
-
-        # Hỏi có muốn sửa không
-        while True:
-            choice = input("Có muốn sửa điểm không (y/n): ").lower().strip()
-            if choice == "y":
-                break
-            elif choice == "n":
-                return
-            else:
-                print("Chỉ được nhập y hoặc n!")
-
-        # Hiện danh sách môn hiện tại
-        print("\nCác môn hiện có:", self.__scores)
-
-        # ===== nhập môn cần sửa =====
-        while True:
-            subject = input("Nhập môn muốn sửa: ").strip()
-
-            # Check rỗng
-            if subject == "":
-                print("Không được để trống!")
-                continue
-
-            # Check format tên môn (bỏ re.match khắt khe nếu tên môn trong file dính ký tự đặc biệt)
-            # Kiểm tra xem môn nhập vào có tồn tại trong dict không (không phân biệt hoa thường)
-            found_subject = None
-            for key in self.__scores.keys():
-                if key.strip().lower() == subject.lower():
-                    found_subject = key
-                    break
-
-            if found_subject is None:
-                print(f"Môn '{subject}' không tồn tại! Vui lòng nhập lại chính xác.")
-                print("Các môn hiện có:", list(self.__scores.keys()))
-                continue
-            
-            # Nếu tìm thấy môn, gán lại chính xác key trong dict để sửa
-            subject = found_subject
-            break
-
-        # ===== nhập điểm mới =====
-        while True:
-            try:
-                new_score = float(input(f"Nhập điểm mới cho môn {subject}: "))
-
-                # Check khoảng điểm
-                if 0 <= new_score <= 10:
-                    self.__scores[subject] = new_score
-                    print(f"Cập nhật thành công điểm môn {subject} thành {new_score}!")
-                    break
-                else:
-                    print("Điểm phải từ 0 đến 10")
-
-            except ValueError:
-                print("Điểm phải là số!")
-                # ===== tính GPA =====
     def calculate_gpa(self):
-                    if len(self.__scores) == 0:
-                        self.__gpa = 0
-                    else:
-                        self.__gpa = sum(self.__scores.values()) / len(self.__scores)
+        if not self.__scores:
+            return 0.0
+        return round(sum(self.__scores.values()) / len(self.__scores), 2)
 
-                    return self.__gpa
-
-                # ===== lấy bảng điểm =====
-    def get_scores(self):
-                    return self.__scores
-
-                # ===== hiển thị =====
-    def __str__(self):
-                    return (
-                        f"{self.__student_id} | "
-                        f"{self.__name} | "
-                        f"{self.__day}/{self.__month}/{self.__year} | "
-                        f"{self.__major} | "
-                        f"{self.__scores}|"
-                        f"GPA: {self.__gpa:.2f}"
-                    )
-
-                # ===== ghi file =====
     def to_file_string(self):
-                    return (
-                        f"{self.__student_id}|"
-                        f"{self.__name}|"
-                        f"{self.__day}/{self.__month}/{self.__year}|"
-                        f"{self.__major}|"
-                        f"{self.__scores} |"
-                        f"{self.__gpa:.2f}\n"
+        scores_json = json.dumps(self.__scores, ensure_ascii=False)
+        return f"{self.__student_id}|{self.__name}|{self.__day}|{self.__month}|{self.__year}|{self.__major}|{scores_json}|{self.__gpa}\n"
 
-    
-                    )
-                #==== lưu file ====0
-    def save_to_file(self):
-            fh = FileHandler("students.txt")
-            fh.write_lines([self.to_file_string()])
-            print("Đã lưu vào students.txt")
-        
+    @classmethod
+    def from_file_string(cls, line):
+        parts = line.strip().split("|")
+        if len(parts) != 8:
+            raise ValueError("Dòng dữ liệu không hợp lệ")
+        sid, name, day, month, year, major, scores_json, gpa = parts
+        scores = json.loads(scores_json) if scores_json != "{}" else {}
+        return cls(
+            sid, name, int(day), int(month), int(year), major, scores, float(gpa)
+        )
+
+    def __str__(self):
+        birth = f"{self.__day}/{self.__month}/{self.__year}"
+        return f"{self.__student_id} | {self.__name} | {birth} | {self.__major} | GPA: {self.__gpa:.2f}"
+
