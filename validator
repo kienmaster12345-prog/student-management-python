@@ -1,2 +1,33 @@
+import re
+
+
 def is_valid_score(score):
     return 0 <= score <= 10
+
+
+def is_valid_id(student_id):
+    return re.match(r"^[A-Za-z]{2}\d+$", student_id) is not None
+
+
+def is_valid_name(name):
+    return re.match(r"^[A-Za-zÀ-ỹ\s]+$", name) is not None
+
+
+def is_valid_day(day):
+    return 1 <= day <= 31
+
+
+def is_valid_month(month):
+    return 1 <= month <= 12
+
+
+def is_valid_year(year):
+    return 1990 <= year <= 2010
+
+
+def is_valid_major(major):
+    return re.match(r"^[A-Za-z\s]+$", major) is not None
+
+
+def is_valid_subject(subject):
+    return re.match(r"^[A-Za-zÀ-ỹ\s]+$", subject) is not None
